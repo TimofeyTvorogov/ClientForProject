@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_container"
+        >
+
+
+    </FrameLayout>
+    <me.ibrahimsn.lib.SmoothBottomBar
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom"
+        app:backgroundColor="@color/primary_color"
+        app:cornerRadius="20dp"
+        app:duration="@integer/material_motion_duration_long_1"
+        app:iconSize="36dp"
+        app:iconTint="#73FFFFFF"
+        app:iconTintActive="@color/text_icons_color"
+        app:indicatorColor="@color/dark_primary_color"
+        app:indicatorRadius="20dp"
+        app:itemFontFamily="@font/qanellas_light"
+        app:menu="@menu/bottom_menu"
+        app:textColor="@color/text_icons_color"
+        app:textSize="18sp"
+
+        />
+    <include layout="@layout/bottom_sheet" />
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

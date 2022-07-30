@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">BottomNavigationT</string>
+
+    <string name="blank_fragment">blank fragment</string>
+    <string name="item_1_title">КАРТА</string>
+    <string name="item_2_title">О НАС</string>
+    <string name="API_KEY">AIzaSyAa4ZiUd3o6qbzQ8C3CE52znvsydhxGwl0</string>
+</resources>
