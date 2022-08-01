@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 
 public class AboutFragment extends Fragment {
-ImageView imageView;
+
 
 
 
@@ -20,7 +20,7 @@ ImageView imageView;
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_about, container, false);
-         imageView = view.findViewById(R.id.teal_view);
+
 
         return view;
     }

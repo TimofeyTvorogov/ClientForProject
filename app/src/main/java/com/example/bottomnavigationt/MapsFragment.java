@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,28 +33,30 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     private MainActivity activity;
     private ArrayList<VandalismInfo> vandalismList = new ArrayList<>();
 
+
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
         @Override
         public void onMapReady(GoogleMap googleMap) {
+
             googleMap.setOnMarkerClickListener(MapsFragment.this);
 
-            if (vandalismList.isEmpty()) {
-                Toast.makeText(getContext(), "ну пипец", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                for (int i = 0; i < vandalismList.size(); i++) {
-                    VandalismInfo vandalismInfo = vandalismList.get(i);
-                    LatLng latLng = new LatLng(vandalismInfo.lat, vandalismInfo.lon);
-                    Marker marker = googleMap.addMarker(new MarkerOptions().position(latLng));
-                    marker.setTag(Integer.valueOf(i));
-                    if (vandalismInfo.isCleaned){
-                        marker.setVisible(false);
-                    }
+            for (int i = 0; i < vandalismList.size(); i++) {
+
+                VandalismInfo vandalismInfo = vandalismList.get(i);
+                LatLng latLng = new LatLng(vandalismInfo.getLat(), vandalismInfo.getLon());
+
+                Marker marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+                marker.setTag(Integer.valueOf(i));
+
+                if (vandalismInfo.getCleaned()){
+                    marker.setVisible(false);
                 }
             }
 
+
         }
+
     };
 
     @Nullable
@@ -67,7 +68,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
         activity = (MainActivity) getActivity();
 
-        Retrofit retrofit = new Retrofit.Builder()
+        /*Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -76,9 +77,29 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
         Call<ArrayList<VandalismInfo>> call = clientService.getVandalism();
         call.enqueue(new VandalismCallBack());
+         */
+        DataLoader.getData();
 
         return view;
 
+    }
+
+    @Override
+    public boolean onMarkerClick(@NonNull Marker marker) {
+
+        activity.behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        VandalismInfo vandalismInfo = vandalismList.get((Integer) marker.getTag());
+        activity.addressTv.setText(vandalismInfo.getAddress());
+        activity.objectTv.setText(vandalismInfo.getObject());
+        activity.typeTv.setText(vandalismInfo.getType());
+        activity.votesTv.setText(vandalismInfo.getVotes().toString());
+        activity.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        return false;
+    }
+    private void moveAndZoom(GoogleMap map,LatLng latLng,float zoom){
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
     }
 
     @Override
@@ -89,21 +110,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             mapFragment.getMapAsync(callback);
         }
     }
-
-    @Override
-    public boolean onMarkerClick(@NonNull Marker marker) {
-
-        activity.behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
-        VandalismInfo vandalismInfo = vandalismList.get((Integer) marker.getTag());
-        activity.addressTv.setText(vandalismInfo.address);
-        activity.objectTv.setText(vandalismInfo.object);
-        activity.typeTv.setText(vandalismInfo.type);
-        activity.votesTv.setText(vandalismInfo.votes.toString());
-        activity.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-        return false;
-    }
+    /*
     class VandalismCallBack implements Callback<ArrayList<VandalismInfo>> {
         @Override
         public void onResponse(Call<ArrayList<VandalismInfo>> call, Response<ArrayList<VandalismInfo>> response) {
@@ -117,4 +124,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+    */
+
 }
