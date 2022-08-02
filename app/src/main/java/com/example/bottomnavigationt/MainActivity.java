@@ -9,33 +9,24 @@ import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.View;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-
-import java.util.ArrayList;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import me.ibrahimsn.lib.OnItemSelectedListener;
 import me.ibrahimsn.lib.SmoothBottomBar;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
-public class MainActivity extends AppCompatActivity implements OnItemSelectedListener {
-SmoothBottomBar bottomBar;
-LinearLayout bottomSheet;
 
-    AboutFragment aboutFragment = new AboutFragment();
-    MapsFragment mapsFragment = new MapsFragment();
-    FragmentManager fm = getSupportFragmentManager();
-    FragmentTransaction ft;
-    BottomSheetBehavior behavior;
-    TextView addressTv, objectTv, typeTv, votesTv;
+public class MainActivity extends AppCompatActivity implements OnItemSelectedListener, View.OnClickListener {
+    public SmoothBottomBar bottomBar;
+    public AboutFragment aboutFragment = new AboutFragment();
+    public MapsFragment mapsFragment = new MapsFragment();
+    public AddFragment addFragment = new AddFragment();
+    private final FragmentManager fm = getSupportFragmentManager();
+    private FragmentTransaction ft;
+    public FloatingActionButton fab;
+
 
 
 
@@ -50,23 +41,19 @@ LinearLayout bottomSheet;
         setContentView(R.layout.activity_main);
 
         bottomBar = findViewById(R.id.bottomBar);
-        bottomSheet = findViewById(R.id.bottom_sheet);
-        behavior = BottomSheetBehavior.from(bottomSheet);
-        addressTv = findViewById(R.id.address_tv);
-        objectTv = findViewById(R.id.object_tv);
-        typeTv = findViewById(R.id.type_tv);
-        votesTv = findViewById(R.id.votes_tv);
 
-        behavior.setHideable(true);
-        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        behavior.setPeekHeight(280);
+        fab = findViewById(R.id.open_addFragment_fab);
+
+
+        fab.setOnClickListener(this);
+
 
         bottomBar.setOnItemSelectedListener(this);
         bottomBar.setItemActiveIndex(0);
 
         ft = fm.beginTransaction()
-                .setReorderingAllowed(true)
                 .add(R.id.fragment_container,mapsFragment)
+                .add(R.id.fragment_container,addFragment).hide(addFragment)
                 .add(R.id.fragment_container, aboutFragment).hide(aboutFragment);
         ft.commit();
 
@@ -74,6 +61,13 @@ LinearLayout bottomSheet;
 
 
     }
+    @Override
+    public void onClick(View view) {
+        fab.hide();
+        ft = fm.beginTransaction().show(addFragment).hide(mapsFragment).setReorderingAllowed(true).addToBackStack(null);
+        ft.commit();
+        bottomBar.setVisibility(view.GONE);
+        }
 
     public boolean checkPermission(){
 
@@ -97,18 +91,27 @@ LinearLayout bottomSheet;
                 for (int i = 0; i < grantResults.length; i++) {
                     if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                         granted = false;
+                        finish();
                         break;
+
                     }
                 }
             }
             else {
                 granted = false;
+                finish();
             }
         }
     }
 
     @Override
     public boolean onItemSelect(int i) {
+        if (i==0 && aboutFragment.adminSwitch.isChecked()){
+            fab.show();
+        }
+        else{
+            fab.hide();
+        }
         ft = fm.beginTransaction();
         switch (i){
             case 0:
@@ -122,5 +125,17 @@ LinearLayout bottomSheet;
         }
         ft.commit();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(bottomBar.getVisibility()==View.VISIBLE){
+            finish();
+        }
+        else{
+            bottomBar.setVisibility(View.VISIBLE);
+            fm.popBackStack();
+            fab.show();
+        }
     }
 }

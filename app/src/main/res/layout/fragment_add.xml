@@ -1,13 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<!--<ScrollView
+    android:id="@+id/add_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddFragment">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".AddFragment"
+    android:fillViewport="true"
+    android:scrollbars="none"
+
+    >-->
+
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".AddFragment"
+    >
 
     <ImageButton
+        android:id="@+id/back_ib"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="5dp"
+
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
+        android:src="@drawable/ic_arrow_back" />
+
+    <TextView
+        android:id="@+id/order_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/back_ib"
+        android:fontFamily="@font/qanellas_medium"
+        android:text="Встаньте рядом с вандализированным объектом"
+        android:layout_margin="5dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/add_object_et"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/order_tv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginVertical="10dp"
+        android:hint="Что было испорчено?\n(столб, историческое здание итп)"
+        android:padding="5dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/add_object_et"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/add_type_et"
+        android:padding="5dp"
+        android:layout_marginVertical="10dp"
+        android:layout_marginHorizontal="5dp"
+        android:hint="как испорчен объект?\n(расклеечная реклама,граффити итп)" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/upload_vandalism_b"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:text="добавить новый случай вандализма"
+
+        />
+
+    <TextView
+        android:id="@+id/upload_image_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/add_type_et"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginVertical="10dp"
+        android:padding="5dp"
+        android:textSize="20sp"
+        android:text="Загрузите фотографию"
+
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/upload_image_tv"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_toRightOf="@id/upload_image_tv"
+        android:text="+"
+        android:textSize="20sp"
+
+
+
+        />
+    <ImageView
+        android:id="@+id/vandalism_iv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@color/secondary_text_color"
+        android:layout_below="@id/upload_image_tv"
+        android:contentDescription="нет фото"
+        android:layout_above="@+id/upload_vandalism_b"/>
+
+
 
 
 </RelativeLayout>
+

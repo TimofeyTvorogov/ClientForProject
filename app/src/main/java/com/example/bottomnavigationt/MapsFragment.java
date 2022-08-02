@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,19 +22,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener {
-    private static final String url = "http://192.168.0.79:8080/";
 
-    private MainActivity activity;
+// TODO: 02.08.2022 implement countdownTimer
+public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, View.OnClickListener, GoogleMap.OnMapClickListener {
+    private LinearLayout bottomSheet;
+    private BottomSheetBehavior behavior;
+    private TextView addressTv, objectTv, typeTv, votesTv;
+    private Button voteButton, deleteButton;
+
     private ArrayList<VandalismInfo> vandalismList = new ArrayList<>();
-
+    private Long currentMarkerId = null;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -47,7 +49,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 LatLng latLng = new LatLng(vandalismInfo.getLat(), vandalismInfo.getLon());
 
                 Marker marker = googleMap.addMarker(new MarkerOptions().position(latLng));
-                marker.setTag(Integer.valueOf(i));
+                marker.setTag(vandalismInfo.getId());
 
                 if (vandalismInfo.getCleaned()){
                     marker.setVisible(false);
@@ -66,38 +68,55 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
-        activity = (MainActivity) getActivity();
 
-        /*Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(url)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        bottomSheet = view.findViewById(R.id.bottom_sheet);
+        addressTv = view.findViewById(R.id.address_tv);
+        objectTv = view.findViewById(R.id.object_tv);
+        typeTv = view.findViewById(R.id.type_tv);
+        votesTv = view.findViewById(R.id.votes_tv);
+        voteButton = view.findViewById(R.id.vote_b);
+        deleteButton = view.findViewById(R.id.delete_b);
+        behavior = BottomSheetBehavior.from(bottomSheet);
 
-        ClientService clientService = retrofit.create(ClientService.class);
+        deleteButton.setOnClickListener(this);
+        voteButton.setOnClickListener(this);
 
-        Call<ArrayList<VandalismInfo>> call = clientService.getVandalism();
-        call.enqueue(new VandalismCallBack());
-         */
+        behavior.setHideable(true);
+        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        behavior.setPeekHeight(280);
+
         DataLoader.getData();
-
+        vandalismList = DataLoader.vandalismList;
         return view;
 
     }
 
+
     @Override
     public boolean onMarkerClick(@NonNull Marker marker) {
 
-        activity.behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
-        VandalismInfo vandalismInfo = vandalismList.get((Integer) marker.getTag());
-        activity.addressTv.setText(vandalismInfo.getAddress());
-        activity.objectTv.setText(vandalismInfo.getObject());
-        activity.typeTv.setText(vandalismInfo.getType());
-        activity.votesTv.setText(vandalismInfo.getVotes().toString());
-        activity.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
+        VandalismInfo vandalismInfo = findVandalismInfoById((Long) marker.getTag());
+        addressTv.setText(vandalismInfo.getAddress());
+        objectTv.setText(vandalismInfo.getObject());
+        typeTv.setText(vandalismInfo.getType());
+        votesTv.setText(vandalismInfo.getVotes().toString());
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        currentMarkerId = vandalismInfo.getId();
         return false;
     }
+
+    private VandalismInfo findVandalismInfoById(Long id) {
+        VandalismInfo returnInfo = null;
+        for (VandalismInfo vandalismInfo:vandalismList) {
+            if (vandalismInfo.getId().equals(id)){
+                returnInfo = vandalismInfo;
+            }
+        }
+        return returnInfo;
+    }
+
     private void moveAndZoom(GoogleMap map,LatLng latLng,float zoom){
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
     }
@@ -110,20 +129,33 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             mapFragment.getMapAsync(callback);
         }
     }
-    /*
-    class VandalismCallBack implements Callback<ArrayList<VandalismInfo>> {
-        @Override
-        public void onResponse(Call<ArrayList<VandalismInfo>> call, Response<ArrayList<VandalismInfo>> response) {
-            if (response.isSuccessful()) {
-                vandalismList = response.body();
-            }
 
+    @Override
+    public void onClick(View view) {
+
+        switch (view.getId()){
+            case R.id.delete_b:
+                DataLoader.deleteData(currentMarkerId);
+
+                break;
+
+            case R.id.vote_b:
+                VandalismInfo vandalismInfo = findVandalismInfoById(currentMarkerId);
+                Long votes = vandalismInfo.getVotes();
+                HashMap<String,Object> queryMap = new HashMap<>();
+                queryMap.put("votes",votes++);
+                DataLoader.putData(currentMarkerId,queryMap);
+                break;
         }
-        @Override
-        public void onFailure(Call<ArrayList<VandalismInfo>> call, Throwable t) {
-            Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+
     }
-    */
 
+
+    @Override
+    public void onMapClick(@NonNull LatLng latLng) {
+        if (behavior.getState()!=BottomSheetBehavior.STATE_HIDDEN) {
+            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+        currentMarkerId = null;
+    }
 }

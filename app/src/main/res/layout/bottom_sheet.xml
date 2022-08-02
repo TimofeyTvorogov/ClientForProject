@@ -21,10 +21,10 @@
         android:layout_marginBottom="10dp"
         android:layout_gravity="center"
         android:layout_marginTop="-12dp"
+
         />
-<!--todo заменить на relative -->
-    <LinearLayout
-        android:clipToPadding="false"
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -37,50 +37,70 @@
         android:padding="20dp"
     >
         <TextView
+            android:id="@+id/address_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:text="Адрес"
             android:textColor="@color/primary_text_color"
             android:textSize="25sp"
             android:fontFamily="@font/qanellas_regular"
             android:textStyle="bold"
-            android:id="@+id/address_tv"
+
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
             />
+
         <ImageView
+            android:id="@+id/bottom_sheet_iv"
             android:layout_width="match_parent"
-            android:layout_height="450dp" />
+            android:layout_height="450dp"
+
+            android:layout_below="@+id/address_tv"
+            android:layout_marginTop="10dp"
+            />
         <TextView
+            android:id="@+id/object_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:text="Объект вандализма"
             android:textColor="@color/primary_text_color"
             android:textSize="16sp"
             android:fontFamily="@font/qanellas_regular"
-            android:id="@+id/object_tv"
 
-
+            android:layout_below="@id/bottom_sheet_iv"
             />
+
         <TextView
+            android:id="@+id/type_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
+            android:layout_below="@id/object_tv"
+            android:fontFamily="@font/qanellas_regular"
             android:text="Тип вандализма"
             android:textColor="@color/primary_text_color"
-            android:textSize="16sp"
-            android:fontFamily="@font/qanellas_regular"
-            android:id="@+id/type_tv"
-            />
+
+            android:textSize="16sp" />
+
         <TextView
+            android:id="@+id/votes_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
+            android:fontFamily="@font/qanellas_regular"
             android:text="количество голосов"
             android:textColor="@color/primary_text_color"
             android:textSize="16sp"
-            android:fontFamily="@font/qanellas_regular"
-            android:id="@+id/votes_tv"
+
+            android:layout_below="@id/type_tv"
             />
         <Button
+            android:id="@+id/vote_b"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             android:text="голосовать за очистку"
             android:backgroundTint="@color/accent_color"
             android:layout_gravity="bottom"
@@ -89,9 +109,26 @@
             android:textSize="16sp"
             android:fontFamily="@font/qanellas_regular"
 
-
+            android:layout_centerHorizontal="true"
+            android:layout_above="@id/delete_b"
         />
-    </LinearLayout>
+        <Button
+            android:id="@+id/delete_b"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:text="Удалить"
+            android:backgroundTint="@color/accent_color"
+            android:layout_gravity="bottom"
+            android:layout_marginHorizontal="15dp"
+            android:textColor="@color/text_icons_color"
+            android:textSize="16sp"
+            android:fontFamily="@font/qanellas_regular"
+
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+        />
+    </RelativeLayout>
 
 
 

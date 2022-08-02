@@ -10,6 +10,18 @@ public class VandalismInfo {
     private Long votes;
     private Boolean cleaned;
 
+    public VandalismInfo(Double lat,
+                         Double lon,
+                         String address,
+                         String type,
+                         String object) {
+        this.lat = lat;
+        this.lon = lon;
+        this.address = address;
+        this.type = type;
+        this.object = object;
+    }
+
     public Long getId() {
         return id;
     }
