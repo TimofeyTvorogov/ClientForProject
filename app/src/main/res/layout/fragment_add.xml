@@ -66,11 +66,11 @@
         android:hint="как испорчен объект?\n(расклеечная реклама,граффити итп)" />
 
     <Button
+        android:id="@+id/upload_vandalism_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/upload_vandalism_b"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:text="добавить новый случай вандализма"
 
         />

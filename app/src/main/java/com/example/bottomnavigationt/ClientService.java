@@ -2,6 +2,7 @@ package com.example.bottomnavigationt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -16,13 +17,13 @@ import retrofit2.http.QueryMap;
 
 public interface ClientService {
     @GET("api/v1/vandalism")
-    Call<ArrayList<VandalismInfo>> getVandalism();
+    Call<List<VandalismInfo>> getVandalism();
     @POST("api/v1/vandalism")
-    Call<ArrayList<VandalismInfo>> postVandalism(@Body VandalismInfo vandalismInfo);
+    Call<List<VandalismInfo>> postVandalism(@Body VandalismInfo vandalismInfo);
     @PUT("api/v1/vandalism/{id}")
-    Call<ArrayList<VandalismInfo>> putVandalism(@Path("id") Long id, @QueryMap HashMap<String,Object> params);
+    Call<List<VandalismInfo>> putVandalism(@Path("id") Long id, @QueryMap HashMap<String,Object> params);
    @DELETE("api/v1/vandalism/{id}")
-    Call<ArrayList<VandalismInfo>> deleteVandalism(@Path("id") Long id);
+    Call<List<VandalismInfo>> deleteVandalism(@Path("id") Long id);
 
 
 

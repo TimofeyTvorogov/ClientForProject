@@ -10,46 +10,65 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.*;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.HashMap;
 
 import me.ibrahimsn.lib.OnItemSelectedListener;
 import me.ibrahimsn.lib.SmoothBottomBar;
 
-
-
 public class MainActivity extends AppCompatActivity implements OnItemSelectedListener, View.OnClickListener {
-    public SmoothBottomBar bottomBar;
-    public AboutFragment aboutFragment = new AboutFragment();
-    public MapsFragment mapsFragment = new MapsFragment();
-    public AddFragment addFragment = new AddFragment();
-    private final FragmentManager fm = getSupportFragmentManager();
-    private FragmentTransaction ft;
-    public FloatingActionButton fab;
-
-
-
 
     private static final int REQUEST_CODE = 1001;
     private static final String FINE_LOC = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String CRS_LOC = Manifest.permission.ACCESS_COARSE_LOCATION;
+
+    private final FragmentManager fm = getSupportFragmentManager();
+    private FragmentTransaction ft;
+
+    private LinearLayout bottomSheet;
+    private TextView addressTv, objectTv, typeTv, votesTv;
+    private Button voteButton, deleteButton;
+
+    private AboutFragment aboutFragment = new AboutFragment();
+    private DataLoader dataLoader;
+    //todo make private
+    public AddFragment addFragment = new AddFragment();
+    public SmoothBottomBar bottomBar;
+    public MapsFragment mapsFragment = new MapsFragment();
+    public FloatingActionButton fab;
+    public BottomSheetBehavior behavior;
+
     public boolean granted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        bottomSheet = findViewById(R.id.bottom_sheet);
+        addressTv = findViewById(R.id.address_tv);
+        objectTv = findViewById(R.id.object_tv);
+        typeTv = findViewById(R.id.type_tv);
+        votesTv = findViewById(R.id.votes_tv);
+        voteButton = findViewById(R.id.vote_b);
+        deleteButton = findViewById(R.id.delete_b);
+        fab = findViewById(R.id.open_addFragment_fab);
         bottomBar = findViewById(R.id.bottomBar);
 
-        fab = findViewById(R.id.open_addFragment_fab);
-
-
-        fab.setOnClickListener(this);
-
-
-        bottomBar.setOnItemSelectedListener(this);
         bottomBar.setItemActiveIndex(0);
+
+        deleteButton.setOnClickListener(this);
+        voteButton.setOnClickListener(this);
+        fab.setOnClickListener(this);
+        bottomBar.setOnItemSelectedListener(this);
+
+        behavior = BottomSheetBehavior.from(bottomSheet);
+        behavior.setHideable(true);
+        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        behavior.setPeekHeight(280);
 
         ft = fm.beginTransaction()
                 .add(R.id.fragment_container,mapsFragment)
@@ -57,16 +76,38 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                 .add(R.id.fragment_container, aboutFragment).hide(aboutFragment);
         ft.commit();
 
-
-
-
     }
     @Override
     public void onClick(View view) {
-        fab.hide();
-        ft = fm.beginTransaction().show(addFragment).hide(mapsFragment).setReorderingAllowed(true).addToBackStack(null);
-        ft.commit();
-        bottomBar.setVisibility(view.GONE);
+
+        dataLoader = DataLoader.getInstance();
+        switch (view.getId()){
+            case R.id.open_addFragment_fab:
+                fab.hide();
+                ft = fm.beginTransaction()
+                        .show(addFragment)
+                        .hide(mapsFragment)
+                        .setReorderingAllowed(true)
+                        .addToBackStack(null);
+                ft.commit();
+                bottomBar.setVisibility(view.GONE);
+                break;
+
+            case R.id.vote_b:
+                VandalismInfo vandalismInfo = (VandalismInfo) mapsFragment.getCurrentMarker().getTag();
+                Long votes = vandalismInfo.getVotes();
+                HashMap<String,Object> queryMap = new HashMap<>();
+                queryMap.put("votes",votes++);
+                dataLoader.putData(vandalismInfo.getId(),queryMap);
+                break;
+
+            case R.id.delete_b:
+                vandalismInfo = (VandalismInfo) mapsFragment.getCurrentMarker().getTag();
+                dataLoader.deleteData(vandalismInfo.getId());
+                break;
+
+            }
+
         }
 
     public boolean checkPermission(){
@@ -137,5 +178,18 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
             fm.popBackStack();
             fab.show();
         }
+    }
+    public void setInfoOnBottomSheet(VandalismInfo vandalismInfo) {
+
+        if (behavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
+            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+
+        addressTv.setText(vandalismInfo.getAddress());
+        objectTv.setText(vandalismInfo.getObject());
+        typeTv.setText(vandalismInfo.getType());
+        votesTv.setText(vandalismInfo.getVotes().toString());
+
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }

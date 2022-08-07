@@ -20,6 +20,8 @@ public class VandalismInfo {
         this.address = address;
         this.type = type;
         this.object = object;
+        cleaned = false;
+        votes = 0L;
     }
 
     public Long getId() {
@@ -84,5 +86,19 @@ public class VandalismInfo {
 
     public void setCleaned(Boolean cleaned) {
         this.cleaned = cleaned;
+    }
+
+    @Override
+    public String toString() {
+        return "VandalismInfo{" +
+                "id=" + id +
+                ", lat=" + lat +
+                ", lon=" + lon +
+                ", address='" + address + '\'' +
+                ", type='" + type + '\'' +
+                ", object='" + object + '\'' +
+                ", votes=" + votes +
+                ", cleaned=" + cleaned +
+                '}';
     }
 }

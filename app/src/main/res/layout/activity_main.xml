@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<RelativeLayout
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,10 +21,10 @@
             android:id="@+id/open_addFragment_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
             android:backgroundTint="@color/accent_color"
             android:src="@drawable/ic_add"
-
+            app:borderWidth="0dp"
+            app:rippleColor="@color/indicator_color"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:layout_marginRight="20dp"
@@ -39,7 +44,7 @@
         app:iconSize="36dp"
         app:iconTint="#73FFFFFF"
         app:iconTintActive="@color/text_icons_color"
-        app:indicatorColor="@color/dark_primary_color"
+        app:indicatorColor="@color/indicator_color"
         app:indicatorRadius="20dp"
         app:itemFontFamily="@font/qanellas_light"
         app:menu="@menu/bottom_menu"
@@ -53,3 +58,5 @@
 
 
 </RelativeLayout>
+    <include layout="@layout/bottom_sheet"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
