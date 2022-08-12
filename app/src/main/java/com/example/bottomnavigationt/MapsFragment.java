@@ -31,20 +31,30 @@ public class MapsFragment extends Fragment implements
         GoogleMap.OnMapClickListener,
         OnMapReadyCallback {
 
+    protected GoogleMap globalMap;
     private MainActivity activity;
-    private Marker currentMarker = null;
+    protected Marker currentMarker = null;
     private DataLoader dataLoader;
-
+    protected SupportMapFragment mapFragment;
 
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            googleMap.setOnMapClickListener(this);
-            googleMap.setOnMarkerClickListener(MapsFragment.this);
-            dataLoader = DataLoader.getInstance(googleMap, this);
-            dataLoader.getData();
+            globalMap = googleMap;
+            //globalMap.setOnMapClickListener(this);
+            globalMap.setOnMarkerClickListener(MapsFragment.this);
+
+            if (activity.checkPermission()||activity.isGranted()){
+
+                googleMap.setMyLocationEnabled(true);
+            }
+
+            dataLoader = DataLoader.getInstance(globalMap, this);
+            dataLoader.initLoc(false);
+            dataLoader.getVandalism();
+
+
             //поставить камеру на метку локации
-            //googleMap.setMyLocationEnabled(true);
-            //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(1,2),10));
+
 
         }
 
@@ -73,10 +83,12 @@ public class MapsFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
 
             mapFragment.getMapAsync(this);
+
         }
     }
 
@@ -84,10 +96,12 @@ public class MapsFragment extends Fragment implements
     public void onMapClick(@NonNull LatLng latLng) {
        if (activity.behavior.getState()!=BottomSheetBehavior.STATE_HIDDEN) {
             activity.behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
-        Toast.makeText(getContext(), "map click", Toast.LENGTH_SHORT).show();
-        currentMarker = null;
+       }
+
+       Toast.makeText(getContext(), "map click", Toast.LENGTH_SHORT).show();
+       currentMarker = null;
     }
+
 
     public Marker getCurrentMarker() {
         return currentMarker;

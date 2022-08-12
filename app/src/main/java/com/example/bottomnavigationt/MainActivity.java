@@ -1,5 +1,7 @@
 package com.example.bottomnavigationt;
 
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.*;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -15,6 +17,8 @@ import android.widget.*;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+
+
 import java.util.HashMap;
 
 import me.ibrahimsn.lib.OnItemSelectedListener;
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     private static final String FINE_LOC = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String CRS_LOC = Manifest.permission.ACCESS_COARSE_LOCATION;
 
+    private boolean granted = false;
+
     private final FragmentManager fm = getSupportFragmentManager();
     private FragmentTransaction ft;
 
@@ -35,14 +41,13 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
     private AboutFragment aboutFragment = new AboutFragment();
     private DataLoader dataLoader;
-    //todo make private
-    public AddFragment addFragment = new AddFragment();
-    public SmoothBottomBar bottomBar;
-    public MapsFragment mapsFragment = new MapsFragment();
-    public FloatingActionButton fab;
-    public BottomSheetBehavior behavior;
 
-    public boolean granted = false;
+    protected AddFragment addFragment = new AddFragment();
+    private SmoothBottomBar bottomBar;
+    protected MapsFragment mapsFragment = new MapsFragment();
+    protected FloatingActionButton fab;
+    protected BottomSheetBehavior behavior;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +70,35 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         fab.setOnClickListener(this);
         bottomBar.setOnItemSelectedListener(this);
 
-        behavior = BottomSheetBehavior.from(bottomSheet);
+        behavior = from(bottomSheet);
         behavior.setHideable(true);
-        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        behavior.setState(STATE_HIDDEN);
         behavior.setPeekHeight(280);
+        behavior.setBottomSheetCallback(new BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case STATE_DRAGGING:
+                    case STATE_EXPANDED:
+                        fab.animate().scaleX(0).scaleY(0).setDuration(300).start();
+                        //fm.beginTransaction().hide(mapsFragment).commit();
+                        break;
+                    case STATE_COLLAPSED:
+                    case STATE_HIDDEN:
+                        fab.animate().scaleX(1).scaleY(1).setDuration(300).start();
+                        //fm.beginTransaction().show(mapsFragment).commit();
+                        break;
+
+
+                }
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
 
         ft = fm.beginTransaction()
                 .add(R.id.fragment_container,mapsFragment)
@@ -76,11 +106,15 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                 .add(R.id.fragment_container, aboutFragment).hide(aboutFragment);
         ft.commit();
 
+
+
     }
+
     @Override
     public void onClick(View view) {
 
         dataLoader = DataLoader.getInstance();
+        //todo на нажатие кнопки забирать локацию
         switch (view.getId()){
             case R.id.open_addFragment_fab:
                 fab.hide();
@@ -90,60 +124,29 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                         .setReorderingAllowed(true)
                         .addToBackStack(null);
                 ft.commit();
-                bottomBar.setVisibility(view.GONE);
+                bottomBar.setVisibility(View.GONE);
                 break;
 
             case R.id.vote_b:
                 VandalismInfo vandalismInfo = (VandalismInfo) mapsFragment.getCurrentMarker().getTag();
                 Long votes = vandalismInfo.getVotes();
                 HashMap<String,Object> queryMap = new HashMap<>();
-                queryMap.put("votes",votes++);
-                dataLoader.putData(vandalismInfo.getId(),queryMap);
+                queryMap.put("votes",++votes);
+                dataLoader.putVandalism(vandalismInfo.getId(),queryMap);
                 break;
 
             case R.id.delete_b:
                 vandalismInfo = (VandalismInfo) mapsFragment.getCurrentMarker().getTag();
-                dataLoader.deleteData(vandalismInfo.getId());
+                dataLoader.deleteVandalism(vandalismInfo.getId());
                 break;
 
             }
 
         }
 
-    public boolean checkPermission(){
 
-        if (ActivityCompat.checkSelfPermission(this, FINE_LOC) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, CRS_LOC) != PackageManager.PERMISSION_GRANTED) {
-            //что делать, если разрешение не дано: попробовать запросить
-            ActivityCompat.requestPermissions(this, new String[]{FINE_LOC, CRS_LOC}, REQUEST_CODE);
-            return false;
-        }
-        return true;
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE) {
-            granted = true;
-            if (grantResults.length > 0) {
-                for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                        granted = false;
-                        finish();
-                        break;
 
-                    }
-                }
-            }
-            else {
-                granted = false;
-                finish();
-            }
-        }
-    }
 
     @Override
     public boolean onItemSelect(int i) {
@@ -170,26 +173,85 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
     @Override
     public void onBackPressed() {
-        if(bottomBar.getVisibility()==View.VISIBLE){
-            finish();
+        mapsFragment.currentMarker = null;
+        switch (bottomBar.getVisibility()){
+
+            case View.VISIBLE:
+                if(behavior.getState()== STATE_HIDDEN){
+                    finish();
+                }
+                else{
+                    behavior.setState(STATE_HIDDEN);
+
+                }
+                break;
+
+            case View.GONE:
+                returnUI();
+                break;
+
         }
-        else{
-            bottomBar.setVisibility(View.VISIBLE);
-            fm.popBackStack();
-            fab.show();
-        }
+
+    }
+    public void returnUI(){
+        bottomBar.setVisibility(View.VISIBLE);
+        fm.popBackStack();
+        fab.show();
     }
     public void setInfoOnBottomSheet(VandalismInfo vandalismInfo) {
 
-        if (behavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
+        /*if (behavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
             behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
+        }*/
 
         addressTv.setText(vandalismInfo.getAddress());
         objectTv.setText(vandalismInfo.getObject());
         typeTv.setText(vandalismInfo.getType());
         votesTv.setText(vandalismInfo.getVotes().toString());
 
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        behavior.setState(STATE_EXPANDED);
+    }
+
+    public boolean checkPermission(){
+
+        if (ActivityCompat.checkSelfPermission(this, FINE_LOC) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, CRS_LOC) != PackageManager.PERMISSION_GRANTED) {
+            //что делать, если разрешение не дано: попробовать запросить
+            ActivityCompat.requestPermissions(this, new String[]{FINE_LOC, CRS_LOC}, REQUEST_CODE);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE) {
+            granted = true;
+            if (grantResults.length > 0) {
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        granted = false;
+
+                        break;
+
+                    }
+                }
+            }
+            else {
+                granted = false;
+
+            }
+        }
+    }
+
+
+
+
+
+    public boolean isGranted() {
+        return granted;
     }
 }

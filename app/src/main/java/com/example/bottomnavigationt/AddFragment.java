@@ -20,7 +20,8 @@ public class AddFragment extends Fragment implements View.OnClickListener {
     ImageView vandalismIv;
     MainActivity activity;
     DataLoader dataLoader;
-
+    protected String typeToAdd, objectToAdd;
+    protected VandalismInfo vandalismToPost;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add, container, false);
@@ -37,21 +38,18 @@ public class AddFragment extends Fragment implements View.OnClickListener {
         uploadVandalismB.setOnClickListener(this);
         return view;
     }
-    //todo убрать исчезновение фрагмента в главную активность
-private void returnUI(){
-    activity.bottomBar.setVisibility(View.VISIBLE);
-    getParentFragmentManager().beginTransaction().hide(this).show(activity.mapsFragment).commit();
-    activity.fab.show();
-}
+
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.back_ib:
-                returnUI();
+                activity.returnUI();
                 break;
             case R.id.upload_vandalism_b:
-                String typeToAdd, objectToAdd;
-                if (addTypeEt.getText() == null && addObjectEt.getText() == null) {
+
+                if ((addTypeEt.getText() == null && addObjectEt.getText() == null)||
+                        (addTypeEt.getText().equals("") && addObjectEt.getText().equals(""))) {
+
                     typeToAdd = "default type";
                     objectToAdd = "default object";
                 }
@@ -59,14 +57,15 @@ private void returnUI(){
                     typeToAdd = addTypeEt.getText().toString();
                     objectToAdd = addObjectEt.getText().toString();
                 }
-                //todo implement geocoder and geolocation
+
+                vandalismToPost = new VandalismInfo(null,null,null,typeToAdd,objectToAdd);
+
                 dataLoader = DataLoader.getInstance();
-                dataLoader.postData(new VandalismInfo(Math.random()*180-90,
-                        Math.random()*360-180,
-                        "default address",
-                        typeToAdd,
-                        objectToAdd));
-                returnUI();
+                dataLoader.initLoc(true);
+
+
+
+                activity.returnUI();
                 Toast.makeText(getContext(), "случай вандализма добавлен", Toast.LENGTH_SHORT).show();
                 break;
         }
