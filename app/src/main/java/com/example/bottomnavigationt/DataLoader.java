@@ -47,7 +47,6 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     private final GoogleMap googleMap;
     private static DataLoader instance = null;
     private boolean isPostRequest;
-
     //private final String url = "http://192.168.0.79:8080/";
     private static final String url = "http://192.168.0.80:8080/";
 
@@ -84,6 +83,8 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
                     "воспользуйтесь перегруженной функцией с аргументами");
         }
     }
+    public void getImage(){
+    }
 
     public void getVandalism(){
 
@@ -92,7 +93,6 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     }
 
     public void postVandalism(VandalismInfo vandalismInfo){
-
         Call<Void> call = clientService.postVandalism(vandalismInfo);
         call.enqueue(new PPDVandalismCallBack());
 
@@ -224,8 +224,8 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         @Override
         public void onResponse(Call<Void> call, Response<Void> response) {
             if (response.isSuccessful()) {
-                googleMap.clear();
-                getVandalism();
+                    googleMap.clear();
+                    getVandalism();
             }
             else{
                 try {

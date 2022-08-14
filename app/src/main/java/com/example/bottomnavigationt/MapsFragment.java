@@ -25,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 
 
-// TODO: 02.08.2022 implement countdownTimer
+
 public class MapsFragment extends Fragment implements
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMapClickListener,

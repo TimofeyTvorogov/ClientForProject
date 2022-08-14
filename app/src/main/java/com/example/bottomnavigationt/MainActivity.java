@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     public void onClick(View view) {
 
         dataLoader = DataLoader.getInstance();
-        //todo на нажатие кнопки забирать локацию
+
         switch (view.getId()){
             case R.id.open_addFragment_fab:
                 fab.hide();
@@ -133,11 +133,14 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                 HashMap<String,Object> queryMap = new HashMap<>();
                 queryMap.put("votes",++votes);
                 dataLoader.putVandalism(vandalismInfo.getId(),queryMap);
+                voteButton.setClickable(false);
+                behavior.setState(STATE_HIDDEN);
                 break;
 
             case R.id.delete_b:
                 vandalismInfo = (VandalismInfo) mapsFragment.getCurrentMarker().getTag();
                 dataLoader.deleteVandalism(vandalismInfo.getId());
+                behavior.setState(STATE_HIDDEN);
                 break;
 
             }
