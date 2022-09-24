@@ -76,7 +76,7 @@ public class MapsFragment extends Fragment implements
     public boolean onMarkerClick(@NonNull Marker marker) {
         currentMarker = marker;
         VandalismInfo vandalismInfo = (VandalismInfo) marker.getTag();
-        activity.setInfoOnBottomSheet(vandalismInfo);
+        activity.setInfoOnBottomSheet(vandalismInfo,dataLoader);
         return false;
     }
 

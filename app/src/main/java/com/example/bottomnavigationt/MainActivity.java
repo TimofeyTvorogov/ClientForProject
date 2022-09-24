@@ -1,6 +1,20 @@
 package com.example.bottomnavigationt;
 
-import static com.google.android.material.bottomsheet.BottomSheetBehavior.*;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.from;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,16 +22,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.*;
-
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-
 
 import java.util.HashMap;
 
@@ -37,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
     private LinearLayout bottomSheet;
     private TextView addressTv, objectTv, typeTv, votesTv;
-    private Button voteButton, deleteButton;
+    private MaterialButton voteButton, deleteButton;
 
     private AboutFragment aboutFragment = new AboutFragment();
     private DataLoader dataLoader;
@@ -47,34 +54,9 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     protected MapsFragment mapsFragment = new MapsFragment();
     protected FloatingActionButton fab;
     protected BottomSheetBehavior behavior;
+    protected ImageView bottomSheetIV;
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        bottomSheet = findViewById(R.id.bottom_sheet);
-        addressTv = findViewById(R.id.address_tv);
-        objectTv = findViewById(R.id.object_tv);
-        typeTv = findViewById(R.id.type_tv);
-        votesTv = findViewById(R.id.votes_tv);
-        voteButton = findViewById(R.id.vote_b);
-        deleteButton = findViewById(R.id.delete_b);
-        fab = findViewById(R.id.open_addFragment_fab);
-        bottomBar = findViewById(R.id.bottomBar);
-
-        bottomBar.setItemActiveIndex(0);
-
-        deleteButton.setOnClickListener(this);
-        voteButton.setOnClickListener(this);
-        fab.setOnClickListener(this);
-        bottomBar.setOnItemSelectedListener(this);
-
-        behavior = from(bottomSheet);
-        behavior.setHideable(true);
-        behavior.setState(STATE_HIDDEN);
-        behavior.setPeekHeight(280);
-        behavior.setBottomSheetCallback(new BottomSheetCallback() {
+    private final BottomSheetCallback bottomSheetCallback = new BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
@@ -98,7 +80,39 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
 
             }
-        });
+        };
+
+
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        bottomSheet = findViewById(R.id.bottom_sheet);
+        addressTv = findViewById(R.id.address_tv);
+        objectTv = findViewById(R.id.object_tv);
+        typeTv = findViewById(R.id.type_tv);
+        votesTv = findViewById(R.id.votes_tv);
+        voteButton = findViewById(R.id.vote_b);
+        deleteButton = findViewById(R.id.delete_b);
+        fab = findViewById(R.id.open_addFragment_fab);
+        bottomBar = findViewById(R.id.bottomBar);
+        bottomSheetIV = findViewById(R.id.b_sheet_iv);
+
+        bottomBar.setItemActiveIndex(0);
+
+        deleteButton.setOnClickListener(this);
+        voteButton.setOnClickListener(this);
+        fab.setOnClickListener(this);
+        bottomBar.setOnItemSelectedListener(this);
+
+        behavior = from(bottomSheet);
+        behavior.setHideable(true);
+        behavior.setState(STATE_HIDDEN);
+        behavior.setPeekHeight(280);
+
+        behavior.addBottomSheetCallback(bottomSheetCallback);
 
         ft = fm.beginTransaction()
                 .add(R.id.fragment_container,mapsFragment)
@@ -109,7 +123,15 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
 
     }
+    private void setCallBacks() {
 
+    }
+    private void setupBottomSheet(){
+
+    }
+    private void findViewsByIds(){
+
+    }
     @Override
     public void onClick(View view) {
 
@@ -201,17 +223,13 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         fm.popBackStack();
         fab.show();
     }
-    public void setInfoOnBottomSheet(VandalismInfo vandalismInfo) {
-
-        /*if (behavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
-            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }*/
+    public void setInfoOnBottomSheet(VandalismInfo vandalismInfo,DataLoader loader) {
 
         addressTv.setText(vandalismInfo.getAddress());
-        objectTv.setText(vandalismInfo.getObject());
-        typeTv.setText(vandalismInfo.getType());
-        votesTv.setText(vandalismInfo.getVotes().toString());
-
+        objectTv.setText(String.format("Объект: %s",vandalismInfo.getObject()));
+        typeTv.setText(String.format("Тип: %s",vandalismInfo.getType()));
+        votesTv.setText(String.format("Голосов: %s",vandalismInfo.getVotes().toString()));
+        loader.getImage(vandalismInfo.getId());
         behavior.setState(STATE_EXPANDED);
     }
 
@@ -249,10 +267,6 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
             }
         }
     }
-
-
-
-
 
     public boolean isGranted() {
         return granted;

@@ -9,6 +9,7 @@ public class VandalismInfo {
     private String object;
     private Long votes;
     private Boolean cleaned;
+    private String imageURI;
 
     public VandalismInfo(Double lat,
                          Double lon,

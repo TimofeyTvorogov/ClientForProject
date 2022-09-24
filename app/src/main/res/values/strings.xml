@@ -5,4 +5,7 @@
     <string name="item_1_title">КАРТА</string>
     <string name="item_2_title">О НАС</string>
     <string name="API_KEY">AIzaSyAa4ZiUd3o6qbzQ8C3CE52znvsydhxGwl0</string>
+    <string name="vk"><a href="https://vk.com/l3ather_man">https://vk.com/l3ather_man</a></string>
+    <string name="tg"><a href="https://t.me/l3ather_man">@l3ather_man</a></string>
+    <string name="mail">mr.tvorogov2004@mail.ru</string>
 </resources>

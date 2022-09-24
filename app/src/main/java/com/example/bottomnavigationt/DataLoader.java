@@ -21,13 +21,18 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.squareup.picasso.Picasso;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -75,21 +80,41 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     }
 
     public static DataLoader getInstance() {
-        if (instance != null) {
-            return instance;
-        }
-        else {
-            throw new IllegalStateException("одиночка ещё не был создан, " +
-                    "воспользуйтесь перегруженной функцией с аргументами");
-        }
+        if (instance == null)
+            throw new IllegalStateException("одиночка ещё не был создан, " + "воспользуйтесь перегруженной функцией с аргументами");
+
+        return instance;
     }
-    public void getImage(){
+    public void getImage(Long imageId){
+        String fullUrl = url+"api/v1/vandalism/"+imageId;
+        Picasso.get().load(fullUrl).into(activity.bottomSheetIV);
+
     }
 
     public void getVandalism(){
 
         Call<List<VandalismInfo>> call = clientService.getVandalism();
         call.enqueue(new GetVandalismCallBack());
+    }
+    public void postImage(String path){
+        File file = new File(path);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"),file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file",file.getName(),requestFile);
+
+        Call<Void> call = clientService.postImage(body);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+
+                    Toast.makeText(activity, response.message(), Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(activity,t.getMessage(),Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void postVandalism(VandalismInfo vandalismInfo){
@@ -152,7 +177,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
             lon = location.getLongitude();
 
             if (!isPostRequest){
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lon),15));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lon),3));
 
             }
             else {
@@ -199,9 +224,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
                         marker.setVisible(false);
                     }
                 }
-                /*if (!isGetRequest) {
-                    fragment.mapFragment.getMapAsync(fragment);
-                }*/
+
                 Log.d("onResponse","good answer" );
                 Toast.makeText(fragment.getContext(), "хороший ответ", Toast.LENGTH_SHORT).show();
 
@@ -224,8 +247,11 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         @Override
         public void onResponse(Call<Void> call, Response<Void> response) {
             if (response.isSuccessful()) {
+
                     googleMap.clear();
                     getVandalism();
+                    if (isPostRequest)
+                        Toast.makeText(activity, "случай вандализма добавлен", Toast.LENGTH_SHORT).show();
             }
             else{
                 try {
