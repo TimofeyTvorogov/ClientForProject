@@ -11,17 +11,14 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+
 
 public class AddFragment extends Fragment implements View.OnClickListener {
     MaterialButton backIb;
@@ -35,7 +32,7 @@ public class AddFragment extends Fragment implements View.OnClickListener {
 
     private Uri latestTmpUri = null;
     private ImageView previewImage = null;
-    private String path;
+
     File tmpFile;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,11 +79,11 @@ public class AddFragment extends Fragment implements View.OnClickListener {
                     objectToAdd = addObjectEt.getText().toString();
                 }
 
-                vandalismToPost = new VandalismInfo(null,null,null,typeToAdd,objectToAdd);
+                //vandalismToPost = new VandalismInfo(null,null,null,typeToAdd,objectToAdd,null);
 
                 dataLoader = DataLoader.getInstance();
                 dataLoader.initLoc(true);
-                dataLoader.postImage(path);
+                dataLoader.postImage(latestTmpUri);
                 activity.returnUI();
 
                 break;
@@ -98,6 +95,7 @@ public class AddFragment extends Fragment implements View.OnClickListener {
     private final ActivityResultLauncher<String> selectImageFromGalleryResult =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
+                    //глобальная переменная для вытаскивания uri из колбека
                     latestTmpUri = uri;
                     previewImage.setImageURI(uri);
 
@@ -124,20 +122,17 @@ public class AddFragment extends Fragment implements View.OnClickListener {
             throw new RuntimeException("Cannot create temp file", exception);
         }
         latestTmpUri = uri;
+
         takeImageResult.launch(uri);
     }
+
 
     private Uri getTmpFileUri() throws IOException {
 
         tmpFile = File.createTempFile("tmp_image_file", ".jpg", activity.getCacheDir());
         //noinspection ResultOfMethodCallIgnored
         tmpFile.createNewFile();
-        path = tmpFile.getPath();
+        tmpFile.deleteOnExit();
+
         final String authority = String.format("%s.provider", BuildConfig.APPLICATION_ID);
-        return FileProvider.getUriForFile(getContext(), authority, tmpFile);
-
-    }
-
-
-
-}
+        return FileProvider.getUriForFile(getContext(), authority, tmpFile);}}

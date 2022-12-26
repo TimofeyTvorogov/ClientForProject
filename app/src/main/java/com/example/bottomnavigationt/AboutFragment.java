@@ -1,22 +1,18 @@
 package com.example.bottomnavigationt;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 public class AboutFragment extends Fragment {
 

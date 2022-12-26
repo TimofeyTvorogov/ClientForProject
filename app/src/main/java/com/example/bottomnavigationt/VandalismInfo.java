@@ -1,5 +1,7 @@
 package com.example.bottomnavigationt;
 
+
+
 public class VandalismInfo {
     private Long id;
     private Double lat;
@@ -9,18 +11,20 @@ public class VandalismInfo {
     private String object;
     private Long votes;
     private Boolean cleaned;
-    private String imageURI;
+    private String imageName;
 
     public VandalismInfo(Double lat,
                          Double lon,
                          String address,
                          String type,
-                         String object) {
+                         String object,
+                         String imageName) {
         this.lat = lat;
         this.lon = lon;
         this.address = address;
         this.type = type;
         this.object = object;
+        this.imageName = imageName;
         cleaned = false;
         votes = 0L;
     }
@@ -89,6 +93,14 @@ public class VandalismInfo {
         this.cleaned = cleaned;
     }
 
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
     @Override
     public String toString() {
         return "VandalismInfo{" +
@@ -100,6 +112,7 @@ public class VandalismInfo {
                 ", object='" + object + '\'' +
                 ", votes=" + votes +
                 ", cleaned=" + cleaned +
+                ", imageName='" + imageName + '\'' +
                 '}';
     }
 }

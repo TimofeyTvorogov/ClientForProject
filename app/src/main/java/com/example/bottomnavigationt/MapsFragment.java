@@ -21,11 +21,6 @@ import com.google.android.gms.maps.model.Marker;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
-
-
-
-
-
 public class MapsFragment extends Fragment implements
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMapClickListener,

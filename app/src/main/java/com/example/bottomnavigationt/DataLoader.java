@@ -1,9 +1,11 @@
 package com.example.bottomnavigationt;
 
 
+import android.content.ContentResolver;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.util.Log;
 
 import android.widget.Toast;
@@ -25,7 +27,11 @@ import com.squareup.picasso.Picasso;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +51,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     private final MainActivity activity;
     private final Geocoder geocoder;
     private final FusedLocationProviderClient locationClient;
+    private final ContentResolver resolver;
     private List<Address> rawAddresses;
     private static Double lat,lon;
     private static String address;
@@ -52,8 +59,8 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     private final GoogleMap googleMap;
     private static DataLoader instance = null;
     private boolean isPostRequest;
-    //private final String url = "http://192.168.0.79:8080/";
-    private static final String url = "http://192.168.0.80:8080/";
+
+    private static final String url = "https://project-tagless.herokuapp.com/";
 
     private final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(url)
@@ -61,7 +68,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
             .build();
 
     private final ClientService clientService = retrofit.create(ClientService.class);
-
+   private File tmpFile;
     private List<VandalismInfo> vandalismList;
 
     private DataLoader(GoogleMap googleMap,MapsFragment fragment){
@@ -70,6 +77,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         activity = (MainActivity) fragment.getActivity();
         geocoder = new Geocoder(activity,ru);
         locationClient = LocationServices.getFusedLocationProviderClient(activity);
+        resolver = activity.getApplicationContext().getContentResolver();
     }
 
     public static DataLoader getInstance(GoogleMap googleMap, MapsFragment fragment){
@@ -85,8 +93,8 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
 
         return instance;
     }
-    public void getImage(Long imageId){
-        String fullUrl = url+"api/v1/vandalism/"+imageId;
+    public void getImage(String imageName){
+        String fullUrl = url+"api/v1/vandalism/"+imageName;
         Picasso.get().load(fullUrl).into(activity.bottomSheetIV);
 
     }
@@ -96,23 +104,66 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         Call<List<VandalismInfo>> call = clientService.getVandalism();
         call.enqueue(new GetVandalismCallBack());
     }
-    public void postImage(String path){
-        File file = new File(path);
-        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"),file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("file",file.getName(),requestFile);
 
-        Call<Void> call = clientService.postImage(body);
+
+    /*метод в который передаётся uri, с помощью которого
+    вновь создается файл с изображением
+    из файла получаем его имя
+    в очередь ставится мультипарт запрос на отправку картинки и её имени
+    (как метод должен работать по задумке)
+     */
+    public void postImage(Uri uri){
+        FileOutputStream fos = null;
+        InputStream is = null;
+        try {
+
+            tmpFile = File.createTempFile("img",".jpg");
+
+
+            is = resolver.openInputStream(uri);
+
+            fos = new FileOutputStream(tmpFile);
+
+            int readNum = 0;
+            byte[] bytes = new byte[1024];
+
+            while ((readNum = is.read(bytes)) != -1) {
+                fos.write(bytes, 0, readNum);
+            }
+
+        }
+        catch (IOException e) {e.printStackTrace();}
+        finally {
+            try{
+                if (is != null) {
+                    is.close();
+                }
+                if (fos != null) {
+                    fos.close();
+                }
+        }
+        catch (IOException e){e.printStackTrace();}
+        }
+
+
+        //file = new File(resolver.openInputStream(uri));
+        MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", tmpFile.getName(),
+                RequestBody.create(MediaType.parse("image/*"), tmpFile));
+
+
+
+        Call<Void> call = clientService.postImage(tmpFile.getName(),filePart);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
 
-                    Toast.makeText(activity, response.message(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(activity, response.message(), Toast.LENGTH_SHORT).show();
 
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(activity,t.getMessage(),Toast.LENGTH_SHORT).show();
+                //Toast.makeText(activity,t.getMessage(),Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -192,7 +243,9 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
                         lon,
                         getDecodedAddress(rawAddresses),
                         activity.addFragment.typeToAdd,
-                        activity.addFragment.objectToAdd));
+                        activity.addFragment.objectToAdd,
+                        tmpFile.getName())
+                        );
 
 
             }
@@ -202,7 +255,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
     }
     @Override
     public void onFailure(@NonNull Exception e) {
-        Toast.makeText(fragment.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(fragment.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 
     }
 
@@ -226,11 +279,11 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
                 }
 
                 Log.d("onResponse","good answer" );
-                Toast.makeText(fragment.getContext(), "хороший ответ", Toast.LENGTH_SHORT).show();
+
 
             }
             else {
-                throw new IllegalStateException("ответ плох");
+                throw new IllegalStateException("bad answer");
 //                Log.d("onResponse","bad answer" );
 //                Toast.makeText(fragment.getContext(), response.message(), Toast.LENGTH_SHORT).show();
             }
@@ -239,7 +292,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         @Override
         public void onFailure(Call<List<VandalismInfo>> call, Throwable t) {
             Log.d("onFailure","failed to get response");
-            Toast.makeText(fragment.getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(fragment.getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
     private class PPDVandalismCallBack implements Callback<Void> {
@@ -265,7 +318,7 @@ public class DataLoader implements OnSuccessListener<Location>, OnFailureListene
         @Override
         public void onFailure(Call<Void> call, Throwable t) {
             Log.d("onFailure","failed to get response");
-            Toast.makeText(fragment.getContext(),"failed response\n"+t.getMessage(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(fragment.getContext(),"failed response\n"+t.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
